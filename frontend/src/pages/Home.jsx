@@ -34,7 +34,7 @@ const Home = () => {
           color="black"
           align="center"
         >
-          Talk-A-Tive
+          Chat Alot
         </Text>
       </Box>
 
@@ -45,6 +45,7 @@ const Home = () => {
         bg="white"
         p={4}
         color="black"
+        mb={10}
       >
         <Tabs isFitted variant="soft-rounded">
           <TabList mb="1em">

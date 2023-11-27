@@ -30,6 +30,7 @@ const ScrollableChat = ({ messages }) => {
                 />
               </Tooltip>
             )}
+
             <span
               style={{
                 backgroundColor: `${
@@ -42,7 +43,23 @@ const ScrollableChat = ({ messages }) => {
                 maxWidth: "75%",
               }}
             >
-              {m.content}
+              {m.type === "image" ? (
+                <>
+                  <img
+                    src={`http://localhost:5000/${m.content}`}
+                    alt={"file img"}
+                    width="200"
+                    height="200"
+                    style={{
+                      
+                      borderRadius: "15px",
+                      
+                    }}
+                  />
+                </>
+              ) : (
+                <span>{m.content}</span>
+              )}
             </span>
           </div>
         ))}

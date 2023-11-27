@@ -5,14 +5,17 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { ChakraProvider } from "@chakra-ui/react";
 import { BrowserRouter } from "react-router-dom";
-import {ChatProvider} from "./context/chatProvider";
+import { ChatProvider } from "./context/chatProvider";
+import { CallContextProvider } from "./context/callContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <ChakraProvider>
     <BrowserRouter>
       <ChatProvider>
-        <App />
+        <CallContextProvider>
+          <App />
+        </CallContextProvider>
       </ChatProvider>
     </BrowserRouter>
   </ChakraProvider>

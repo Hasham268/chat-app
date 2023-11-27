@@ -17,18 +17,22 @@ const SignUp = () => {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [confirmPassword, setConfirmPassword] = useState();
+
   const [pic, setPic] = useState();
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  const [show2, setShow2] = useState(false);
 
   const navigate = useNavigate();
 
   const toast = useToast();
 
   const handleClick = () => setShow(!show);
+  const handleClick2 = () => setShow2(!show2);
 
   const postDetails = (pics) => {
     setLoading(true);
+
     if (pics === undefined) {
       toast({
         title: "Please select an image!",
@@ -73,9 +77,11 @@ const SignUp = () => {
 
   const submitHandler = async () => {
     setLoading(true);
-    if (!name || !password || !email || !confirmPassword) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
+    if (!name || !email || !password || !confirmPassword) {
       toast({
-        title: "Please select all field!",
+        title: "Please Fill all the Feilds",
         status: "warning",
         duration: 5000,
         isClosable: true,
@@ -86,12 +92,59 @@ const SignUp = () => {
     }
     if (password !== confirmPassword) {
       toast({
-        title: "Passwords don't match",
+        title: "Passwords Do Not Match",
         status: "warning",
         duration: 5000,
         isClosable: true,
         position: "bottom",
       });
+      setLoading(false);
+      return;
+    }
+
+    if (typeof name !== "string" || /\d/.test(name)) {
+      toast({
+        title: "Name should be a string",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading(false);
+      return;
+    }
+    if (!regex.test(email)) {
+      toast({
+        title: "Email format not valid",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading(false);
+      return;
+    }
+    if (password.length < 4) {
+      toast({
+        title: "Password should be greater than 4",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!pic) {
+      toast({
+        title: "Pic is required",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading(false);
       return;
     }
 
@@ -114,7 +167,7 @@ const SignUp = () => {
       );
 
       toast({
-        title: "Registered successfully",
+        title: "Registered successfully. Mail sent to your email address.",
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -175,13 +228,13 @@ const SignUp = () => {
         <FormLabel>Confirm Password</FormLabel>
         <InputGroup>
           <Input
-            type={show ? "text" : "password"}
+            type={show2 ? "text" : "password"}
             placeholder="Confirm Password"
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
           <InputRightElement width="4.5rem">
-            <Button h="1.75rem" size="sm" onClick={handleClick}>
-              {show ? "Hide" : "Show"}
+            <Button h="1.75rem" size="sm" onClick={handleClick2}>
+              {show2 ? "Hide" : "Show"}
             </Button>
           </InputRightElement>
         </InputGroup>

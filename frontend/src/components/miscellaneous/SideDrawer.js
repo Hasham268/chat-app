@@ -31,6 +31,8 @@ import { Effect } from "react-notification-badge";
 import { getSender } from "../../config/ChatLogics";
 import UserListItem from "../userAvatar/userListItem";
 import { ChatState } from "../../context/chatProvider";
+import { FaPeopleLine } from "react-icons/fa6";
+import PeopleModal from "./PeopleModal";
 
 function SideDrawer() {
   const [search, setSearch] = useState("");
@@ -45,15 +47,21 @@ function SideDrawer() {
     setNotification,
     chats,
     setChats,
+    socket
   } = ChatState();
 
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const history = useNavigate();
+  // console.log(user.token);
 
   const logoutHandler = () => {
     localStorage.removeItem("userInfo");
+    setChats([]);
+    setSelectedChat(null);
+    socket.emit("logout", user._id);
     history("/");
+    
   };
 
   const handleSearch = async () => {
@@ -142,8 +150,14 @@ function SideDrawer() {
           </Button>
         </Tooltip>
         <Text fontSize="2xl" fontFamily="Work sans">
-          Talk-A-Tive
+          Chat Alot
         </Text>
+
+        <PeopleModal accessChat={accessChat} >
+         
+          <FaPeopleLine fontSize={32}/>
+        </PeopleModal>
+
         <div>
           <Menu>
             <MenuButton p={1}>

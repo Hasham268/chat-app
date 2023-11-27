@@ -25,6 +25,7 @@ const Login = () => {
 
   const submitHandler = async () => {
     setLoading(true);
+     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
     if (!email || !password) {
       toast({
         title: "Please Fill all the Feilds",
@@ -36,6 +37,29 @@ const Login = () => {
       setLoading(false);
       return;
     }
+    if (!regex.test(email)) {
+       toast({
+         title: "Email format not valid",
+         status: "warning",
+         duration: 5000,
+         isClosable: true,
+         position: "bottom",
+       });
+       setLoading(false);
+       return;
+    }
+    if (password.length < 4) {
+      toast({
+        title: "Password doesn't match",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading(false);
+      return;
+    }
+
 
     try {
       const config = {
@@ -112,7 +136,7 @@ const Login = () => {
         Login
       </Button>
 
-      <Button
+      {/* <Button
         variant="solid"
         colorScheme="red"
         width="100%"
@@ -122,7 +146,7 @@ const Login = () => {
         }}
       >
         Get Guest User Credentials
-      </Button>
+      </Button> */}
     </VStack>
   );
 };

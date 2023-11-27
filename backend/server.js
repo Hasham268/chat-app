@@ -4,11 +4,17 @@ const dotenv = require("dotenv");
 const connectToDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const stripeRoute = require("./routes/stripe");
 const messageRoutes = require("./routes/messageRoutes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 
+const path = require("path");
+const _dirname = path.dirname("");
+const buildpath = path.join(_dirname, "../frontend/build");
+
 const app = express();
 app.use(express.json());
+app.use(express.static(buildpath));
 
 dotenv.config();
 connectToDB();
@@ -17,6 +23,9 @@ app.get("/", (req, res) => {
   res.send("API is running");
 });
 
+app.use("/uploads/images", express.static("uploads/images/"));
+
+app.use("/api/stripe", stripeRoute);
 app.use("/api/user", userRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/message", messageRoutes);
@@ -24,14 +33,6 @@ app.use("/api/message", messageRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-// app.get("/api/chats", (req, res) => {
-//   res.send(chats);
-// });
-
-// app.get("/api/chats/:id", (req, res) => {
-//   const singleChat = chats.find((c) => c._id === req.params.id);
-//   res.send(singleChat);
-// });
 const PORT = process.env.PORT;
 
 const server = app.listen(
@@ -46,18 +47,33 @@ const io = require("socket.io")(server, {
     // credentials: true,
   },
 });
-
+global.onlineUsers = new Map();
 io.on("connection", (socket) => {
+  global.chatSocket = socket;
   console.log("Connected to socket.io");
   socket.on("setup", (userData) => {
     socket.join(userData._id);
+
     socket.emit("connected");
+    onlineUsers.set(userData._id, socket.id);
+    socket.broadcast.emit("online-users", {
+      onlineUsers: Array.from(onlineUsers.keys()),
+    });
   });
 
-  socket.on("join chat", (room) => {
+  socket.on("join chat", (room, userId) => {
     socket.join(room);
     console.log("User Joined Room: " + room);
   });
+
+  socket.on("logout", (id) => {
+    onlineUsers.delete(id);
+    console.log(id);
+    socket.broadcast.emit("online-users", {
+      onlineUsers: Array.from(onlineUsers.keys()),
+    });
+  });
+
   socket.on("typing", (room) => socket.in(room).emit("typing"));
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
@@ -71,6 +87,34 @@ io.on("connection", (socket) => {
 
       socket.in(user._id).emit("message recieved", newMessageRecieved);
     });
+  });
+
+  socket.on("outgoing-voice-call", (data) => {
+    socket.in(data.to).emit("incoming-voice-call", {
+      from: data.from,
+      roomId: data.roomId,
+      callType: data.callType,
+    });
+  });
+
+  socket.on("outgoing-video-call", (data) => {
+    socket.in(data.to).emit("incoming-video-call", {
+      from: data.from,
+      roomId: data.roomId,
+      callType: data.callType,
+    });
+  });
+
+  socket.on("reject-voice-call", (data) => {
+    socket.to(data.from).emit("voice-call-rejected");
+  });
+
+  socket.on("reject-video-call", (data) => {
+    socket.to(data.from).emit("video-call-rejected");
+  });
+
+  socket.on("accept-incoming-call", ({ id }) => {
+    socket.to(id).emit("accept-call");
   });
 
   socket.off("setup", () => {

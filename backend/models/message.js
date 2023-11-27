@@ -7,13 +7,16 @@ const messageModel = mongoose.Schema(
       trim: true,
     },
     sender: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     chat: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Chat",
-    }
+    },
+    type: {
+      type: String,
+    },
   },
   {
     timestamps: true,
