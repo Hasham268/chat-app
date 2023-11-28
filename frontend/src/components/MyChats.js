@@ -74,7 +74,6 @@ const MyChats = ({ fetchAgain }) => {
             marginLeft={5}
             fontSize={{ base: "17px", md: "10px", lg: "17px" }}
             rightIcon={<AddIcon />}
-         
           >
             New Group Chat
           </Button>
@@ -91,7 +90,7 @@ const MyChats = ({ fetchAgain }) => {
         overflowY="hidden"
       >
         {chats ? (
-          <Stack overflowY="scroll">
+          <Stack overflowY="scroll" maxH="420px">
             {chats.map((chat) => (
               <Box
                 onClick={() => setSelectedChat(chat)}

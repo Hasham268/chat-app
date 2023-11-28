@@ -15,8 +15,10 @@ const Container = ({ data }) => {
   const { dispatch } = useCallContext();
   const { socket, user } = ChatState();
 
+  const ZEGO_SERVER_SECRET = "390a6942b98383948f06a26c7ec6c2b5";
   const ZEGO_APP_ID = 697202935;
-  const ZEGO_SERVER_URL = "wss://webliveroom697202935-api.coolzcloud.com/ws";
+  const ZEGO_SERVER_URL =
+    "wss://webliveroom697202935-api-bak.coolzcloud.com/ws";
 
   useEffect(() => {
     if (data.type === "out-going") {
@@ -57,32 +59,28 @@ const Container = ({ data }) => {
               data.callType === "video" ? "video" : "audio"
             );
             vd.id = streamList[0].streamID;
-
             vd.autoplay = true;
             vd.playsInline = true;
             vd.muted = true;
             if (rmVideo) {
               rmVideo.appendChild(vd);
             }
+
             zg.startPlayingStream(streamList[0].streamID, {
               audio: true,
               video: true,
             }).then((stream) => (vd.srcObject = stream));
-          } else if (
-            updateType === "DELETE" &&
-            zg &&
-            localStream &&
-            streamList[0].streamID
-          ) {
-            zg.destroyStream(localStream);
+          } else if (updateType === "DELETE") {
+            // zg.destroyStream(localStream);
             zg.stopPublishingStream(streamList[0].streamID);
+            zg.stopPlayingStream(streamList[0].streamID);
             zg.logoutRoom(data.roomId.toString());
             dispatch({ type: "END-CALL" });
           }
         }
       );
 
-      await zg.loginRoom(
+      zg.loginRoom(
         data.roomId.toString(),
         token,
         {
@@ -90,40 +88,40 @@ const Container = ({ data }) => {
           userName: user.name,
         },
         { userUpdate: true }
-      );
+      ).then(async (result) => {
+        if (result === true) {
+          const localStream = await zg.createStream({
+            camera: {
+              audio: true,
+              video: data.callType === "video" ? true : false,
+            },
+          });
 
-      const localStream = await zg.createStream({
-        camera: {
-          audio: true,
-          video: data.callType === "video" ? true : false,
-        },
+          const localVideo = document.getElementById("local-audio");
+          const videoElement = document.createElement(
+            data.callType === "video" ? "video" : "audio"
+          );
+          videoElement.id = "video-local-zego";
+          videoElement.className = "h-28 w-34";
+          videoElement.autoplay = true;
+          videoElement.muted = false;
+          videoElement.playsInline = true;
+          localVideo.appendChild(videoElement);
+
+          var td = document.getElementById("video-local-zego");
+          td.srcObject = localStream;
+          let streamId = new Date().getTime().toString();
+          setPublishStream(streamId);
+          setLocalStream(localStream);
+          zg.startPublishingStream(streamId, localStream);
+        }
       });
-
-      const localVideo = document.getElementById("local-audio");
-      const videoElement = document.createElement(
-        data.callType === "video" ? "video" : "audio"
-      );
-
-      videoElement.id = "video-local-zego";
-      videoElement.className = "h-28 w-34";
-      videoElement.autoplay = true;
-      videoElement.muted = false;
-      videoElement.playsInline = true;
-
-      localVideo.appendChild(videoElement);
-      var td = document.getElementById("video-local-zego");
-      td.srcObject = localStream;
-      var streamId = 123 + Date.now();
-      streamId = streamId.toString();
-      setPublishStream(streamId);
-      setLocalStream(localStream);
-      zg.startPublishingStream(streamId, localStream);
     };
 
     if (token) {
       startCall();
     }
-  });
+  }, [token]);
 
   const endCall = () => {
     const id = data._id || data.id;

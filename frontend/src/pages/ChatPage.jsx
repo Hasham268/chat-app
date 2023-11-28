@@ -44,6 +44,12 @@ const ChatPage = () => {
         });
       });
 
+      socket.on("video-call-rejected", () => {
+        dispatch({
+          type: "END-CALL",
+        });
+      });
+
       socket.on("online-users", ({onlineUsers}) => {
         dispatch({
           type: "SET-ONLINE-USERS",

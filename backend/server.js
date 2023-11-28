@@ -9,9 +9,9 @@ const messageRoutes = require("./routes/messageRoutes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 const path = require("path");
-const _dirname = path.dirname("");
-const buildpath = path.join(_dirname, "../frontend/build");
 
+const buildpath = path.join(__dirname, "../frontend/build");
+console.log(buildpath)
 const app = express();
 app.use(express.json());
 app.use(express.static(buildpath));
